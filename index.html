@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="LLM Editor.">
+  <meta name="keywords" content="Vanilla JS, CSS, boilerplate, library, LNSY">
+  <meta name="author" content="LNSY">
+  <meta name="robots" content="index, follow">
+
+  <!-- Open Graph meta tags for better sharing on social media -->
+  <meta property="og:title" content="Vanilla JS / CSS boilerplate">
+  <meta property="og:description" content="Vanilla JS / CSS boilerplate for generating JS and CSS libraries in plain CSS, JS, and HTML. Created by LNSY.">
+  <meta property="og:image" content="./assets/splash.jpg">
+  <meta property="og:url" content="https://example.com"> <!-- Replace with your actual URL -->
+
+  <title>LLM Editor</title>
+  <link rel="stylesheet" type="text/css" href="./editor/editor.css">
+  <script src="./editor/editor.js" type="module"></script>
+  <script type="module" src="./ai-generated.js"></script>
+  <script type="module" src="https://lnsy-dev.github.io/markdown-component/dist/mark-down-component.min.js"></script>
+  <style>
+    body {
+      display: flex;
+    }
+
+    lnsy-edit {
+      flex: 1;
+      height: 100%;
+    }
+
+    #llm_chat {
+      flex: 1;
+      font-family: var(--editor-font);
+      padding: 1em;
+    }
+
+    #llm_response::-webkit-scrollbar {
+      display: none;
+    }
+
+    #llm_response {
+      height: 100%;
+      padding-bottom: 14em;
+      scrollbar-width: none; /* This hides the scrollbar */
+
+      overflow: scroll;
+      -ms-overflow-style: none;  /* For Internet Explorer and Edge */
+      overflow-y: scroll; /* Vertical scrollbar will be hidden but the content is still scrollable */
+
+    }
+
+    #llm_question {
+      color: var(--foreground-color);
+      background-color: transparent;
+      width: 100%;
+      clear: both;
+    }
+    #llm_question_container {
+      width: calc(50% - 6em);
+      height: 10em;
+      position: fixed;
+      bottom: 3em;
+      right: 3em;
+    }
+
+    #open_ai_modal {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      left: 0px;
+      top: 0px;
+      z-index:100;
+      background-color: rgba(0,0,0,0.7);
+      display: none;
+    }
+
+    #open_ai_query {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      padding: 1em;
+      border: 1px solid white;
+    }
+
+    json-editor {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <lnsy-edit id="md_editor"></lnsy-edit>
+
+
+  <div id="llm_chat">
+    <div id="llm_response">
+    </div>
+  </div>
+
+  <script>
+   const apiEndpoint = 'https://api.openai.com/v1/chat/completions';
+
+   function updateLLMResponse(new_text){
+    llm_response.innerHTML = new_text;
+   }
+
+  async function queryLLM(promptText) {
+    const apiKey = localStorage.getItem('open-ai-key'); 
+    if(apiKey === null){
+      open_ai_modal.style.display = 'block';
+      return
+    }
+
+    const data = {
+      max_tokens: 100,
+      model: "gpt-3.5-turbo",
+      messages: [
+      {
+        role: "system",
+        content: "You are a helpful assistant."
+      },
+      {
+        role: "user",
+        content: promptText
+      }]
+    };
+
+    try {
+      const response = await fetch(apiEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify(data),
+      });
+
+      const reader = response.body.getReader();
+      let chunks = []; // Array to hold the chunks of data
+
+      // Function to process the stream
+      const processStream = async ({ done, value }) => {
+        if (done) {
+          console.log('Stream complete');
+          const completeResponse = new TextDecoder("utf-8").decode(concatenate(chunks));
+          console.log(completeResponse); // Process the complete response
+          const parsed_response = JSON.parse(completeResponse);
+          const response = `
+            <ai-generated>
+            ${parsed_response.choices[0].message.content}
+            </ai-generated>
+          `;
+          updateLLMResponse(response);
+          return;
+        }
+
+        // Add the value (Uint8Array) to the chunks array
+        chunks.push(value);
+
+        // Read the next chunk
+        return reader.read().then(processStream);
+      };
+
+      // Start reading the stream
+      await reader.read().then(processStream);
+    } catch (error) {
+      console.error('Error calling OpenAI API:', error);
+    }
+
+  }
+
+  // Helper function to concatenate Uint8Arrays
+  function concatenate(arrays) {
+    let totalLength = arrays.reduce((acc, value) => acc + value.length, 0);
+    let result = new Uint8Array(totalLength);
+    let length = 0;
+    for(let array of arrays) {
+      result.set(array, length);
+      length += array.length;
+    }
+    return result;
+  }
+
+
+
+  md_editor.addEventListener('save', (e) => {
+    e.preventDefault();
+    const prompt = md_editor.getText();
+    updateLLMResponse('Querying ChatGPT 3.5');
+    queryLLM(prompt);
+  });
+
+
+    
+  </script>
+
+   <div id="open_ai_modal">
+    <form id="open_ai_query">
+      <div id="introduction_div">
+        <h2>LLM Assisted Editor</h2>
+        <p>This editor is for editing markdown files with an assist from Chat GPT 3.5</p>
+      </div>
+      <div>
+        <notice>This application requires an OpenAI API Key. You can create a new one <a href="https://platform.openai.com/api-keys" target="_blank">here</a>.</notice>
+      </div>
+      <
+      <div><input placeholder="OpenAI Key" id="openai_key">
+      <input type="submit"></div>
+    </form>
+
+    <script>
+
+      let openaikey = localStorage.getItem('open-ai-key');
+      if(openaikey === null || openaikey.length < 1){
+        open_ai_modal.style.display = 'block';
+      }
+
+      open_ai_query.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        localStorage.setItem('open-ai-key', openai_key.value);
+        open_ai_modal.style.display = 'none';
+      })
+    </script>
+
+  </div>
+
+</body>
+</html>

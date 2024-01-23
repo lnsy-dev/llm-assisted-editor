@@ -1,0 +1,32 @@
+/* Define the font faces */
+@font-face {
+  font-family: 'AtkinsonHyperlegible-Regular';
+  src: url('./fonts/AtkinsonHyperlegible-Regular.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'AtkinsonHyperlegible-Italic';
+  src: url('./fonts/AtkinsonHyperlegible-Italic.woff2') format('woff2');
+  font-weight: normal;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'AtkinsonHyperlegible-Bold';
+  src: url('./fonts/AtkinsonHyperlegible-Bold.woff2') format('woff2');
+  font-weight: bold;
+  font-style: normal;
+}
+
+/* CSS */
+:root {
+  --editor-font: 'Atkinson Hyperlegible', sans-serif;
+  --bg-color: black;
+  --fg-color: white;
+  --secondary-bright-color: #00FF00;
+  --highlight-color: #F57F00;
+  --mid-tone-color: grey;
+  --editor-border: 1px solid var(--mid-tone-color);
+}

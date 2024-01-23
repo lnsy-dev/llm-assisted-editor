@@ -1,0 +1,9 @@
+@import "./styles/reset.css";
+@import "./styles/variables.css";
+@import "./styles/json-editor.css";
+@import "./styles/lnsy-edit.css";
+
+body {
+  background-color: var(--bg-color);
+  color: var(--fg-color);
+}
