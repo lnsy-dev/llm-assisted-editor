@@ -25,9 +25,18 @@
       font-family: var(--editor-font) !important;
     }
 
+    input, button {
+      box-sizing: border-box; /* Include padding and border in the element's total width and height */
+      outline: none; /* Remove default outline */
+    }
+
     lnsy-edit {
       flex: 1;
       height: 100%;
+
+      details {
+        padding: 1px;
+      }
     }
 
     #llm_chat {
@@ -321,6 +330,41 @@
     <div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
   </div>
 
+
+  <style>
+    #introduction_div {
+      h2 {
+        text-align: center;
+      }
+
+      ul {
+        font-size: 80%;
+      }
+
+
+    }
+
+    #open-ai-key-notification {
+      margin-bottom: 0.5em;
+    }
+
+    #open-ai-key {
+  display: flex; /* Enable flexbox */
+  align-items: center; /* Align items vertically in the center */
+  width: 100%; /* Take full width of the container */
+}
+
+#open-ai-key input[type="text"] {
+  flex-grow: 1; /* Allow the input to grow and fill the space */
+  margin-right: 8px; /* Add some space between input and submit button */
+}
+
+#open-ai-key input[type="submit"] {
+  flex-shrink: 0; /* Prevent the button from shrinking */
+  /* Width can be adjusted or removed to use the default width of the submit button */
+}
+
+  </style>
    <div id="open_ai_modal">
     <form id="open_ai_query">
       <div id="introduction_div">
@@ -330,14 +374,13 @@
         <li>Type your prompt into the editor on the left. Press Ctrl-S or press the Query button to query Chat GPT. </li>
         <li>To save the content of a query to the buffer, press the "Save to Buffer Button" on the response. This will add the LLM's response into your file.</li>
         <li>Adjust Tokens to change the length of the responses</li>
-        <li>Download and upload files to change files</li>
         </ul>
       </div>
-      <div>
+      <div id="open-ai-key-notification">
         <p>
-        <notice>This application requires an OpenAI API Key. You can create a new one <a href="https://platform.openai.com/api-keys" target="_blank">here</a>.</notice></p>
+        <notification>This application requires an OpenAI API Key. You can create a new one <a href="https://platform.openai.com/api-keys" target="_blank">here</a>.</notification></p>
       </div>
-      <div><input placeholder="OpenAI Key" id="openai_key">
+      <div id="open-ai-key"><input placeholder="OpenAI Key" id="openai_key" autocomplete="off" type="text">
       <input type="submit"></div>
     </form>
 
