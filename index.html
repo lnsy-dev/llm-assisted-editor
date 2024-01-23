@@ -126,9 +126,21 @@
 
       button {
         background-color: transparent;
-        border: 1px solid var(--mid-tone-color);
+        border: none;
+        border-top: 1px solid var(--mid-tone-color);
         font-size: 80%;
         width: 100%;
+        tansition: all 0.5s ease-in;
+      }
+
+      button:hover {
+        background-color: var(--mid-tone-color);
+        color: var(--background-color);
+      }
+
+      button:active {
+        background-color: var(--fg-color);
+        color: var(--bg-color);
       }
 
       mark-down {
