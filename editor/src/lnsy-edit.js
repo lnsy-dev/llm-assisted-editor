@@ -42,7 +42,6 @@ function removeFrontMatter(content) {
     return content.replace(yamlRegex, '').trim();
 }
 
-
 class LNSYEdit extends HTMLElement {
   connectedCallback(){
     const details = document.createElement('details');
@@ -52,10 +51,12 @@ class LNSYEdit extends HTMLElement {
 
     const button_bar = document.createElement('button-bar');
     const save_button = document.createElement('button');
-    save_button.innerText = 'query';
+    save_button.innerText = 'query llm';
     save_button.addEventListener('click', (e) => {
       this.saveData();
     });
+    save_button.setAttribute('name', 'Ctrl-S');
+
     button_bar.appendChild(save_button);
     
     this.download_button = document.createElement('button');
@@ -68,7 +69,6 @@ class LNSYEdit extends HTMLElement {
     });
     button_bar.appendChild(this.download_link);
     button_bar.appendChild(this.download_button);
-
 
     const load_file_container = document.createElement('button');
     load_file_container.innerText = 'load from disk'
@@ -91,6 +91,16 @@ class LNSYEdit extends HTMLElement {
     });
     load_file_container.appendChild(load_file)
     button_bar.appendChild(load_file_container);
+
+    const token_label = document.createElement('label');
+    token_label.setAttribute('id', 'tokens-label');
+    token_label.innerText = 'Tokens:'
+    const tokens = document.createElement('input');
+    tokens.setAttribute('id', 'token_adjust');
+    tokens.value = 100; 
+    token_label.appendChild(tokens);
+    button_bar.appendChild(token_label);
+
 
     details.appendChild(button_bar);
 
