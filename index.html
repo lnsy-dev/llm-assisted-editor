@@ -17,6 +17,8 @@
   <script src="./editor/editor.js" type="module"></script>
   <script type="module" src="./ai-generated.js"></script>
   <script type="module" src="https://lnsy-dev.github.io/markdown-component/dist/mark-down-component.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
   <style>
     body {
       display: flex;
@@ -161,6 +163,18 @@
   </style>
 </head>
 <body>
+
+  <style>
+    #github-link {
+      position: fixed;
+      bottom: 2px;
+      right: 8px;
+      font-size: 36px;
+    }
+  </style>
+  <div id="github-link">
+    <a href="https://github.com/lnsy-dev/llm-assisted-editor" target="_blank"><i class="fa fa-github"></i></a>
+  </div>
 
   <lnsy-edit id="md_editor"></lnsy-edit>
 
