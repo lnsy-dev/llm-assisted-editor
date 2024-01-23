@@ -29,4 +29,18 @@
   --highlight-color: #F57F00;
   --mid-tone-color: grey;
   --editor-border: 1px solid var(--mid-tone-color);
+  --logo-color: #224455;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --editor-font: 'Atkinson Hyperlegible', sans-serif;
+    --bg-color: black;
+    --fg-color: white;
+    --secondary-bright-color: #00FF00;
+    --highlight-color: #F57F00;
+    --mid-tone-color: grey;
+    --editor-border: 1px solid var(--mid-tone-color);
+    --logo-color: orange;
+  }
 }
