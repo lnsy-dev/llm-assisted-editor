@@ -7,14 +7,12 @@
   <meta name="keywords" content="Vanilla JS, CSS, boilerplate, library, LNSY">
   <meta name="author" content="LNSY">
   <meta name="robots" content="index, follow">
-
   <!-- Open Graph meta tags for better sharing on social media -->
   <meta property="og:title" content="Vanilla JS / CSS boilerplate">
   <meta property="og:description" content="Vanilla JS / CSS boilerplate for generating JS and CSS libraries in plain CSS, JS, and HTML. Created by LNSY.">
   <meta property="og:image" content="./assets/splash.jpg">
   <meta property="og:url" content="https://example.com"> <!-- Replace with your actual URL -->
-
-  <title>LLM Editor</title>
+  <title>LLM Assisted Editor</title>
   <link rel="stylesheet" type="text/css" href="./editor/editor.css">
   <script src="./editor/editor.js" type="module"></script>
   <script type="module" src="./ai-generated.js"></script>
@@ -22,6 +20,8 @@
   <style>
     body {
       display: flex;
+      padding: 1em;
+      margin: 0;
       font-family: var(--editor-font) !important;
     }
 
@@ -33,7 +33,7 @@
     #llm_chat {
       flex: 1;
       font-family: var(--editor-font);
-      padding: 1em;
+      padding: 0 1em;
       max-width: 50%;
     }
 
@@ -45,15 +45,13 @@
       height: 100%;
       padding-bottom: 14em;
       scrollbar-width: none; /* This hides the scrollbar */
-
       overflow: scroll;
       -ms-overflow-style: none;  /* For Internet Explorer and Edge */
       overflow-y: scroll; /* Vertical scrollbar will be hidden but the content is still scrollable */
-
     }
 
     #llm_question {
-      color: var(--foreground-color);
+      color: var(--fg-color);
       background-color: transparent;
       width: 100%;
       clear: both;
@@ -73,11 +71,12 @@
       left: 0px;
       top: 0px;
       z-index:100;
-      background-color: rgba(0,0,0,0.7);
+      background-color: rgba(0,0,0,0.9);
       display: none;
     }
 
     #open_ai_query {
+      color: var(--bg-color);
       position: absolute;
       left: 50%;
       top: 50%;
@@ -89,21 +88,54 @@
     #token_adjust {
       background-color: transparent;
       box-sizing: border;
-      color: white;
-      font-size: 12pt;
+      color: var(--fg-color);
+      font-size: 10pt;
+      padding: 2pt;
       border: 1px solid var(--mid-tone-color);
       position: relative;
-      top: 2px;
+      top: 1px;
       margin-left: 0.5em;
+    }
+
+    lnsy-edit summary {
+      color: #224455;
     }
 
     #tokens-label {
       margin-left: 1em;
       font-size: 10pt;
+      white-space: nowrap;
     }
 
     json-editor {
       display: none;
+    }
+
+    ai-generated {
+      display: block;
+      border: 1px solid var(--mid-tone-color);
+
+      button {
+        background-color: transparent;
+        border: 1px solid var(--mid-tone-color);
+        font-size: 80%;
+        width: 100%;
+      }
+
+      mark-down {
+        padding: 0.5em 1em 1em 1em;
+        pre {
+          white-space: break-spaces;
+          margin: 0;
+        }
+      }
+
+      header {
+        width: 100%;
+        font-size: 80%;
+        font-style: italic;
+        background-color: rgba(155,155,155,0.4);
+      }
     }
   </style>
 </head>
@@ -166,10 +198,15 @@
           console.log(completeResponse); // Process the complete response
           const parsed_response = JSON.parse(completeResponse);
           const response = `
-            <ai-generated>
-            ${parsed_response.choices[0].message.content}
+            <ai-generated 
+              model="${parsed_response.model}" 
+              tokens-used="${parsed_response.usage.total_tokens}"
+              content="${parsed_response.choices[0].message.content}">
+            
             </ai-generated>
           `;
+          loader_indicator.style.display = 'none'
+
           updateLLMResponse(response);
           return;
         }
@@ -206,24 +243,99 @@
   md_editor.addEventListener('save', (e) => {
     e.preventDefault();
     const prompt = md_editor.getText();
-    updateLLMResponse('Querying ChatGPT 3.5');
     queryLLM(prompt);
+    loader_indicator.style.display = 'block'
+
   });
 
 
     
   </script>
 
+  <div id="loader_indicator">
+    <style>
+
+      #loader_indicator {
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        display: none;
+      }
+      .lds-ellipsis {
+        display: inline-block;
+        position: relative;
+        width: 80px;
+        height: 80px;
+      }
+      .lds-ellipsis div {
+        position: absolute;
+        top: 33px;
+        width: 13px;
+        height: 13px;
+        border-radius: 50%;
+        background: var(--highlight-color);
+        animation-timing-function: cubic-bezier(0, 1, 1, 0);
+      }
+      .lds-ellipsis div:nth-child(1) {
+        left: 8px;
+        animation: lds-ellipsis1 0.6s infinite;
+      }
+      .lds-ellipsis div:nth-child(2) {
+        left: 8px;
+        animation: lds-ellipsis2 0.6s infinite;
+      }
+      .lds-ellipsis div:nth-child(3) {
+        left: 32px;
+        animation: lds-ellipsis2 0.6s infinite;
+      }
+      .lds-ellipsis div:nth-child(4) {
+        left: 56px;
+        animation: lds-ellipsis3 0.6s infinite;
+      }
+      @keyframes lds-ellipsis1 {
+        0% {
+          transform: scale(0);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+      @keyframes lds-ellipsis3 {
+        0% {
+          transform: scale(1);
+        }
+        100% {
+          transform: scale(0);
+        }
+      }
+      @keyframes lds-ellipsis2 {
+        0% {
+          transform: translate(0, 0);
+        }
+        100% {
+          transform: translate(24px, 0);
+        }
+      }
+    </style>
+    <div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
+  </div>
+
    <div id="open_ai_modal">
     <form id="open_ai_query">
       <div id="introduction_div">
         <h2>LLM Assisted Editor</h2>
-        <p>This editor is for editing markdown files with an assist from Chat GPT 3.5</p>
-        <p>Type your prompt into the editor on the left. Press Ctrl-S or press the Query button to query Chat GPT. </p>
-        <p>To save the content of a query to the buffer, press the "Save to Buffer Button" on the response</p>
+        <ul>
+        <li>This editor is for editing markdown files with an assist from Chat GPT 3.5</li>
+        <li>Type your prompt into the editor on the left. Press Ctrl-S or press the Query button to query Chat GPT. </li>
+        <li>To save the content of a query to the buffer, press the "Save to Buffer Button" on the response. This will add the LLM's response into your file.</li>
+        <li>Adjust Tokens to change the length of the responses</li>
+        <li>Download and upload files to change files</li>
+        </ul>
       </div>
       <div>
-        <notice>This application requires an OpenAI API Key. You can create a new one <a href="https://platform.openai.com/api-keys" target="_blank">here</a>.</notice>
+        <p>
+        <notice>This application requires an OpenAI API Key. You can create a new one <a href="https://platform.openai.com/api-keys" target="_blank">here</a>.</notice></p>
       </div>
       <div><input placeholder="OpenAI Key" id="openai_key">
       <input type="submit"></div>

@@ -101,7 +101,7 @@ summary {
   CodeMirror template by Jan T. Sott (https://github.com/idleberg), adapted by Bram de Haan (https://github.com/atelierbram/)
 */
 
-.cm-s-lnsy-edit.CodeMirror { background: #000; color: #fff; margin-bottom: 1em;}
+.cm-s-lnsy-edit.CodeMirror { background: var(--bg-color); color: var(--fg-color); margin-bottom: 1em;}
 .cm-s-lnsy-edit div.CodeMirror-selected { background: #545167!important; }
 .cm-s-lnsy-edit .CodeMirror-gutters { background: #2a2734; border-right: 0px; }
 .cm-s-lnsy-edit .CodeMirror-linenumber { color: #545167; }
@@ -134,4 +134,5 @@ summary {
 .CodeMirror {
      width: 100% !important;
      height: 100% !important;
+     padding-right: 1em;
 } 
