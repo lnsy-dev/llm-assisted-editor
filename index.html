@@ -121,7 +121,7 @@
    const apiEndpoint = 'https://api.openai.com/v1/chat/completions';
 
    function updateLLMResponse(new_text){
-    llm_response.innerHTML = new_text;
+    llm_response.innerHTML = new_text + llm_response.innerHTML;
    }
 
   async function queryLLM(promptText) {
@@ -219,6 +219,8 @@
       <div id="introduction_div">
         <h2>LLM Assisted Editor</h2>
         <p>This editor is for editing markdown files with an assist from Chat GPT 3.5</p>
+        <p>Type your prompt into the editor on the left. Press Ctrl-S or press the Query button to query Chat GPT. </p>
+        <p>To save the content of a query to the buffer, press the "Save to Buffer Button" on the response</p>
       </div>
       <div>
         <notice>This application requires an OpenAI API Key. You can create a new one <a href="https://platform.openai.com/api-keys" target="_blank">here</a>.</notice>
