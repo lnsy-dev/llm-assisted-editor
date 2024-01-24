@@ -136,3 +136,8 @@ summary {
      height: 100% !important;
      padding-right: 1em;
 } 
+
+
+notification {
+  color: var(--highlight-color);
+}
