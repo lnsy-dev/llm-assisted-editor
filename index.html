@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -17,7 +18,6 @@
   <script type="module" src="./ai-generated.js"></script>
   <script type="module" src="https://lnsy-dev.github.io/markdown-component/dist/mark-down-component.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-
   <style>
     body {
       display: flex;
@@ -164,8 +164,8 @@
     }
   </style>
 </head>
-<body>
 
+<body>
   <style>
     #github-link {
       position: fixed;
@@ -177,121 +177,111 @@
   <div id="github-link">
     <a href="https://github.com/lnsy-dev/llm-assisted-editor" target="_blank"><i class="fa fa-github"></i></a>
   </div>
-
   <lnsy-edit id="md_editor"></lnsy-edit>
-
-
   <div id="llm_chat">
     <div id="llm_response">
     </div>
   </div>
-
   <script>
-   const apiEndpoint = 'https://api.openai.com/v1/chat/completions';
+    const apiEndpoint = 'https://api.openai.com/v1/chat/completions';
 
-   function updateLLMResponse(new_text){
+    function updateLLMResponse(new_text){
     llm_response.innerHTML = new_text + llm_response.innerHTML;
-   }
-
-  async function queryLLM(promptText) {
-    const apiKey = localStorage.getItem('open-ai-key'); 
-    if(apiKey === null){
-      open_ai_modal.style.display = 'block';
-      return
     }
 
-    const data = {
-      max_tokens: parseInt(token_adjust.value),
-      model: "gpt-3.5-turbo",
-      messages: [
-      {
-        role: "system",
-        content: "You are a helpful assistant."
-      },
-      {
-        role: "user",
-        content: promptText
-      }]
-    };
+    async function queryLLM(promptText) {
+      const apiKey = localStorage.getItem('open-ai-key'); 
+      if(apiKey === null){
+        open_ai_modal.style.display = 'block';
+        return
+      }
 
-    try {
-      const response = await fetch(apiEndpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
+      const data = {
+        max_tokens: parseInt(token_adjust.value),
+        model: "gpt-3.5-turbo",
+        messages: [
+        {
+          role: "system",
+          content: "You are a helpful assistant."
         },
-        body: JSON.stringify(data),
-      });
-
-      const reader = response.body.getReader();
-      let chunks = []; // Array to hold the chunks of data
-
-      // Function to process the stream
-      const processStream = async ({ done, value }) => {
-        if (done) {
-          console.log('Stream complete');
-          const completeResponse = new TextDecoder("utf-8").decode(concatenate(chunks));
-          console.log(completeResponse); // Process the complete response
-          const parsed_response = JSON.parse(completeResponse);
-          const response = `
-            <ai-generated 
-              model="${parsed_response.model}" 
-              tokens-used="${parsed_response.usage.total_tokens}"
-              content="${parsed_response.choices[0].message.content}">
-            
-            </ai-generated>
-          `;
-          loader_indicator.style.display = 'none'
-
-          updateLLMResponse(response);
-          return;
-        }
-
-        // Add the value (Uint8Array) to the chunks array
-        chunks.push(value);
-
-        // Read the next chunk
-        return reader.read().then(processStream);
+        {
+          role: "user",
+          content: promptText
+        }]
       };
 
-      // Start reading the stream
-      await reader.read().then(processStream);
-    } catch (error) {
-      console.error('Error calling OpenAI API:', error);
+      try {
+        const response = await fetch(apiEndpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+          },
+          body: JSON.stringify(data),
+        });
+
+        const reader = response.body.getReader();
+        let chunks = []; // Array to hold the chunks of data
+
+        // Function to process the stream
+        const processStream = async ({ done, value }) => {
+          if (done) {
+            console.log('Stream complete');
+            const completeResponse = new TextDecoder("utf-8").decode(concatenate(chunks));
+            console.log(completeResponse); // Process the complete response
+            const parsed_response = JSON.parse(completeResponse);
+            const response = `
+              <ai-generated 
+                model="${parsed_response.model}" 
+                tokens-used="${parsed_response.usage.total_tokens}"
+                content="${parsed_response.choices[0].message.content}">
+              
+              </ai-generated>
+            `;
+            loader_indicator.style.display = 'none'
+
+            updateLLMResponse(response);
+            return;
+          }
+
+          // Add the value (Uint8Array) to the chunks array
+          chunks.push(value);
+
+          // Read the next chunk
+          return reader.read().then(processStream);
+        };
+
+        // Start reading the stream
+        await reader.read().then(processStream);
+      } catch (error) {
+        console.error('Error calling OpenAI API:', error);
+      }
+
     }
 
-  }
-
-  // Helper function to concatenate Uint8Arrays
-  function concatenate(arrays) {
-    let totalLength = arrays.reduce((acc, value) => acc + value.length, 0);
-    let result = new Uint8Array(totalLength);
-    let length = 0;
-    for(let array of arrays) {
-      result.set(array, length);
-      length += array.length;
+    // Helper function to concatenate Uint8Arrays
+    function concatenate(arrays) {
+      let totalLength = arrays.reduce((acc, value) => acc + value.length, 0);
+      let result = new Uint8Array(totalLength);
+      let length = 0;
+      for(let array of arrays) {
+        result.set(array, length);
+        length += array.length;
+      }
+      return result;
     }
-    return result;
-  }
 
+    md_editor.addEventListener('save', (e) => {
+      e.preventDefault();
+      const prompt = md_editor.getText();
+      queryLLM(prompt);
+      loader_indicator.style.display = 'block'
 
+    });
 
-  md_editor.addEventListener('save', (e) => {
-    e.preventDefault();
-    const prompt = md_editor.getText();
-    queryLLM(prompt);
-    loader_indicator.style.display = 'block'
-
-  });
-
-
-    
   </script>
-
   <div id="loader_indicator">
     <style>
-
       #loader_indicator {
         position: fixed;
         left: 50%;
@@ -355,9 +345,13 @@
         }
       }
     </style>
-    <div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
+    <div class="lds-ellipsis">
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+    </div>
   </div>
-
 
   <style>
     #introduction_div {
@@ -378,57 +372,56 @@
     }
 
     #open-ai-key {
-  display: flex; /* Enable flexbox */
-  align-items: center; /* Align items vertically in the center */
-  width: 100%; /* Take full width of the container */
-}
+      display: flex; /* Enable flexbox */
+      align-items: center; /* Align items vertically in the center */
+      width: 100%; /* Take full width of the container */
+    }
 
-#open-ai-key input[type="text"] {
-  flex-grow: 1; /* Allow the input to grow and fill the space */
-  margin-right: 8px; /* Add some space between input and submit button */
-}
+    #open-ai-key input[type="text"] {
+      flex-grow: 1; /* Allow the input to grow and fill the space */
+      margin-right: 8px; /* Add some space between input and submit button */
+    }
 
-#open-ai-key input[type="submit"] {
-  flex-shrink: 0; /* Prevent the button from shrinking */
-  /* Width can be adjusted or removed to use the default width of the submit button */
-}
+    #open-ai-key input[type="submit"] {
+      flex-shrink: 0; /* Prevent the button from shrinking */
+      /* Width can be adjusted or removed to use the default width of the submit button */
+    }
 
   </style>
-   <div id="open_ai_modal">
+
+  <div id="open_ai_modal">
     <form id="open_ai_query">
       <div id="introduction_div">
         <h2>LLM Assisted Editor</h2>
         <ul>
-        <li>This editor is for editing markdown files with an assist from Chat GPT 3.5</li>
-        <li>Type your prompt into the editor on the left. Press Ctrl-S or press the Query button to query Chat GPT. </li>
-        <li>To save the content of a query to the buffer, press the "Save to Buffer Button" on the response. This will add the LLM's response into your file.</li>
-        <li>Adjust Tokens to change the length of the responses</li>
+          <li>This editor is for editing markdown files with an assist from Chat GPT 3.5</li>
+          <li>Type your prompt into the editor on the left. Press Ctrl-S or press the Query button to query Chat GPT. </li>
+          <li>To save the content of a query to the buffer, press the "Save to Buffer Button" on the response. This will add the LLM's response into your file.</li>
+          <li>Adjust Tokens to change the length of the responses</li>
         </ul>
       </div>
       <div id="open-ai-key-notification">
         <p>
-        <notification>This application requires an OpenAI API Key. You can create a new one <a href="https://platform.openai.com/api-keys" target="_blank">here</a>.</notification></p>
+          <notification>This application requires an OpenAI API Key. You can create a new one <a href="https://platform.openai.com/api-keys" target="_blank">here</a>.</notification>
+        </p>
       </div>
       <div id="open-ai-key"><input placeholder="OpenAI Key" id="openai_key" autocomplete="off" type="text">
-      <input type="submit"></div>
+        <input type="submit"></div>
     </form>
-
     <script>
+    let openaikey = localStorage.getItem('open-ai-key');
+    if (openaikey === null || openaikey.length < 1) {
+      open_ai_modal.style.display = 'block';
+    }
 
-      let openaikey = localStorage.getItem('open-ai-key');
-      if(openaikey === null || openaikey.length < 1){
-        open_ai_modal.style.display = 'block';
-      }
+    open_ai_query.addEventListener('submit', (e) => {
+      e.preventDefault();
 
-      open_ai_query.addEventListener('submit', (e) => {
-        e.preventDefault();
-
-        localStorage.setItem('open-ai-key', openai_key.value);
-        open_ai_modal.style.display = 'none';
-      })
+      localStorage.setItem('open-ai-key', openai_key.value);
+      open_ai_modal.style.display = 'none';
+    })
     </script>
-
   </div>
-
 </body>
+
 </html>
